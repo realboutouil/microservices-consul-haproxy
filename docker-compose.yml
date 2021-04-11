@@ -1,0 +1,83 @@
+version: '3.8'
+services:
+
+  consul:
+    image: consul
+    container_name: consul
+    environment:
+      - CONSUL_BIND_INTERFACE=eth0
+      - ui
+      - server
+      - bootstrap
+      - client=0.0.0.0
+      - CONSUL_ALLOW_PRIVILEGED_PORTS=yes
+    ports:
+      - 8600:8600
+      - 8500:8500
+      - 8300:8300
+    volumes:
+      - "$PWD/consul/data/:/consul/data"
+    restart: always
+    networks:
+      - main_network
+
+  consul-template:
+    image: hashicorp/consul-template:alpine
+    container_name: consul-template
+    volumes:
+      - "$PWD/consul-template:/consul-template"
+      - "$PWD/api-gateway/haproxy/:/etc/haproxy/"
+    command: consul-template -config /consul-template/consul-template.hcl
+    depends_on:
+      - consul
+    networks:
+      - main_network
+
+  api-gateway:
+    image: api-gateway-service:latest
+    container_name: api-gateway
+    build:
+      context: api-gateway
+    volumes:
+      - "$PWD/api-gateway/haproxy/:/etc/haproxy/"
+    depends_on:
+      - consul
+    ports:
+      - 8080:8080
+    restart: on-failure:10
+    networks:
+      - main_network
+
+  service-product:
+    image: service-product:latest
+    container_name: service-product
+    build:
+      context: ./product
+    depends_on:
+      - consul
+    networks:
+      - main_network
+
+  service-client:
+    image: service-client:latest
+    container_name: service-client
+    build:
+      context: ./client
+    depends_on:
+      - consul
+    networks:
+      - main_network
+
+  service-invoice:
+    image: service-invoice:latest
+    container_name: service-invoice
+    build:
+      context: ./invoice
+    depends_on:
+      - consul
+    networks:
+      - main_network
+
+networks:
+  main_network:
+    driver: bridge

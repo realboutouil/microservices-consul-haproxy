@@ -1,0 +1,46 @@
+global
+    log /dev/log local0
+    log /dev/log local1 notice
+    chroot /var/lib/haproxy
+    stats socket /var/run/haproxy_admin.sock mode 660 level admin
+    pidfile /var/run/haproxy.pid
+    user  haproxy
+    group haproxy
+    daemon
+
+defaults
+  log global
+  option httplog
+  option dontlognull
+  mode http
+  timeout connect 5000
+  timeout client  50000
+  timeout server  50000
+
+########################
+### DYNAMIC FRONTEND ###
+########################
+
+frontend http-in
+  bind  *:8080
+
+  {{ range $i, $service := services }}
+      # Service '{{ $service.Name }}'
+      acl is_{{ $service.Name }} path_beg /api/{{ $service.Name }}
+      use_backend {{ $service.Name }} if is_{{ $service.Name }}
+  {{ end }}
+
+
+########################
+### DYNAMIC BACKENDS ###
+########################
+
+{{range $i,$service:=services}}
+# Backend for Service '{{ $service.Name }}'
+backend {{$service.Name}}
+  balance roundrobin
+  {{range $c,$d:=service $service.Name}}
+    http-request set-path "%[path,regsub(^/api/{{$service.Name}}/,/)]"
+    server {{$service.Name}}{{$c}} {{.Address}}:{{.Port}}
+  {{end}}
+{{end}}
