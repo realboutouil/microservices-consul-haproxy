@@ -4,10 +4,18 @@ FROM haproxy:lts-alpine
 # Maintainer info
 LABEL maintainer="Mohammed Amine BOUTOUIL <boutouilmohammedamine@gmail.com>"
 
-RUN apk add --no-cache --update \
-    inotify-tools
+RUN set -exo pipefail \
+    && apk add --no-cache --update \
+        rsyslog \
+        inotify-tools \
+    && mkdir -p /etc/rsyslog.d \
+    && touch /var/log/haproxy.log \
+    && ln -sf /dev/stdout /var/log/haproxy.log
 
+COPY conf.d/rsyslog.conf /etc/rsyslog.d/
 COPY conf.d/entrypoint.sh /usr/local/bin/entrypoint
+
+RUN sed -i '/imklog/s/^/#/' /etc/rsyslog.conf
 
 RUN deluser haproxy \
  && addgroup -g 1001 haproxy \

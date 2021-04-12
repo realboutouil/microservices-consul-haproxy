@@ -2,7 +2,7 @@
 
 ##### Introduction
 ------------
-Technologies Involved 
+Technologies Involved
 
 | Framework       | Description                                                   | 
 | ----------------|:--------------------------------------------------------------| 
@@ -18,6 +18,7 @@ Technologies Involved
 $ sudo chmod +x ./start.sh ./clean.sh
 $ ./start.sh
 ```
+
 ##### Accessing
 ------------
 
