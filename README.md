@@ -1,4 +1,4 @@
-# Microservices with consul and HAProxy As API Gateway
+# Microservices with consul and HAProxy as an API Gateway
 
 ##### Introduction
 ------------
@@ -27,4 +27,4 @@ $ ./start.sh
 | Consul          | http://localhost:8500/ui/                | 
 | Client          | http://localhost:8080/api/clients/       | 
 | Product         | http://localhost:8080/api/products/      |                 
-| Invoice         | http://localhost:8080/api/invoices/      |                  
+| Invoice         | http://localhost:8080/api/invoices/      |
